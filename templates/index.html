@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>পাবলিক নোটপ্যাড</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        text-align: center;
+        background-color: #f0f2f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      textarea {
+        width: 100%;
+        height: 400px;
+        font-size: 16px;
+        padding: 15px;
+        margin: 20px 0;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        resize: vertical;
+      }
+      button {
+        margin: 10px;
+        padding: 12px 25px;
+        font-size: 16px;
+        background-color: #1877f2;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      button:hover {
+        background-color: #166fe5;
+      }
+      h1 {
+        color: #1c1e21;
+        margin-bottom: 30px;
+      }
+      .status {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 5px;
+        display: none;
+      }
+      .success {
+        background-color: #e7f3e5;
+        color: #2e7d32;
+      }
+      .error {
+        background-color: #fdeded;
+        color: #d32f2f;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>পাবলিক নোটপ্যাড</h1>
+      <textarea
+        id="noteContent"
+        placeholder="এখানে আপনার নোট লিখুন..."
+      ></textarea
+      ><br />
+      <button onclick="saveNote()">নোট সেভ করুন</button>
+      <button onclick="loadNote()">নোট লোড করুন</button>
+      <div id="statusMessage" class="status"></div>
+    </div>
+
+    <script>
+      function showStatus(message, isError = false) {
+        const statusDiv = document.getElementById("statusMessage");
+        statusDiv.textContent = message;
+        statusDiv.style.display = "block";
+        statusDiv.className = "status " + (isError ? "error" : "success");
+        setTimeout(() => {
+          statusDiv.style.display = "none";
+        }, 3000);
+      }
+
+      function saveNote() {
+        const content = document.getElementById("noteContent").value;
+        fetch("/save", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: `content=${encodeURIComponent(content)}`,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "success") {
+              showStatus("নোট সফলভাবে সেভ হয়েছে!");
+            } else {
+              showStatus("নোট সেভ করতে সমস্যা হয়েছে: " + data.message, true);
+            }
+          });
+      }
+
+      function loadNote() {
+        fetch("/load")
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "success") {
+              document.getElementById("noteContent").value = data.content;
+              showStatus("নোট সফলভাবে লোড হয়েছে!");
+            } else {
+              showStatus("নোট লোড করতে সমস্যা হয়েছে: " + data.message, true);
+            }
+          });
+      }
+
+      // পেজ লোড হওয়ার সাথে সাথে নোট লোড করা
+      window.onload = loadNote;
+    </script>
+  </body>
+</html>
