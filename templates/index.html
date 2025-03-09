@@ -1,32 +1,42 @@
+
 <!DOCTYPE html>
 <html>
   <head>
     <title>পাবলিক নোটপ্যাড</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
       body {
         font-family: Arial, sans-serif;
-        margin: 20px;
+        margin: 0;
+        padding: 10px;
         text-align: center;
         background-color: #f0f2f5;
       }
       .container {
-        max-width: 800px;
+        max-width: 100%;
         margin: 0 auto;
-        padding: 20px;
+        padding: 10px;
       }
       textarea {
         width: 100%;
-        height: 400px;
+        height: 350px;
         font-size: 16px;
-        padding: 15px;
-        margin: 20px 0;
+        padding: 12px;
+        margin: 15px 0;
         border: 1px solid #ddd;
         border-radius: 8px;
         resize: vertical;
+        box-sizing: border-box;
+      }
+      .button-group {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
       }
       button {
-        margin: 10px;
-        padding: 12px 25px;
+        padding: 12px 20px;
         font-size: 16px;
         background-color: #1877f2;
         color: white;
@@ -34,13 +44,18 @@
         border-radius: 6px;
         cursor: pointer;
         transition: background-color 0.3s;
+        min-width: 140px;
       }
       button:hover {
         background-color: #166fe5;
       }
+      button:active {
+        transform: scale(0.98);
+      }
       h1 {
         color: #1c1e21;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
+        font-size: 24px;
       }
       .status {
         margin-top: 15px;
@@ -56,6 +71,27 @@
         background-color: #fdeded;
         color: #d32f2f;
       }
+      
+      /* Mobile-specific styles */
+      @media (max-width: 600px) {
+        .container {
+          padding: 5px;
+        }
+        h1 {
+          font-size: 22px;
+          margin-bottom: 15px;
+        }
+        textarea {
+          height: 300px;
+          font-size: 15px;
+          padding: 10px;
+        }
+        button {
+          padding: 10px 15px;
+          font-size: 15px;
+          min-width: 120px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -64,14 +100,27 @@
       <textarea
         id="noteContent"
         placeholder="এখানে আপনার নোট লিখুন..."
-      ></textarea
-      ><br />
-      <button onclick="saveNote()">নোট সেভ করুন</button>
-      <button onclick="loadNote()">নোট লোড করুন</button>
+      ></textarea>
+      <div class="button-group">
+        <button onclick="saveNote()">নোট সেভ করুন</button>
+        <button onclick="loadNote()">নোট লোড করুন</button>
+      </div>
       <div id="statusMessage" class="status"></div>
     </div>
 
     <script>
+      // Add touch feedback for mobile devices
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach(button => {
+        button.addEventListener('touchstart', function() {
+          this.style.backgroundColor = '#0d6efd';
+        }, {passive: true});
+        
+        button.addEventListener('touchend', function() {
+          this.style.backgroundColor = '#1877f2';
+        }, {passive: true});
+      });
+      
       function showStatus(message, isError = false) {
         const statusDiv = document.getElementById("statusMessage");
         statusDiv.textContent = message;
@@ -84,6 +133,13 @@
 
       function saveNote() {
         const content = document.getElementById("noteContent").value;
+        
+        // Show loading indication
+        const saveButton = document.querySelector('button');
+        const originalText = saveButton.textContent;
+        saveButton.textContent = "সেভ হচ্ছে...";
+        saveButton.disabled = true;
+        
         fetch("/save", {
           method: "POST",
           headers: {
@@ -98,10 +154,23 @@
             } else {
               showStatus("নোট সেভ করতে সমস্যা হয়েছে: " + data.message, true);
             }
+          })
+          .catch(err => {
+            showStatus("নেটওয়ার্ক সমস্যা: " + err.message, true);
+          })
+          .finally(() => {
+            saveButton.textContent = originalText;
+            saveButton.disabled = false;
           });
       }
 
       function loadNote() {
+        // Show loading indication
+        const loadButton = document.querySelectorAll('button')[1];
+        const originalText = loadButton.textContent;
+        loadButton.textContent = "লোড হচ্ছে...";
+        loadButton.disabled = true;
+        
         fetch("/load")
           .then((response) => response.json())
           .then((data) => {
@@ -111,8 +180,32 @@
             } else {
               showStatus("নোট লোড করতে সমস্যা হয়েছে: " + data.message, true);
             }
+          })
+          .catch(err => {
+            showStatus("নেটওয়ার্ক সমস্যা: " + err.message, true);
+          })
+          .finally(() => {
+            loadButton.textContent = originalText;
+            loadButton.disabled = false;
           });
       }
+
+      // Auto-save functionality
+      let typingTimer;
+      const doneTypingInterval = 2000; // 2 seconds
+      const noteContent = document.getElementById("noteContent");
+      
+      noteContent.addEventListener('keyup', function() {
+        clearTimeout(typingTimer);
+        if (noteContent.value) {
+          typingTimer = setTimeout(saveNote, doneTypingInterval);
+        }
+      });
+      
+      // Clear timer on keydown
+      noteContent.addEventListener('keydown', function() {
+        clearTimeout(typingTimer);
+      });
 
       // পেজ লোড হওয়ার সাথে সাথে নোট লোড করা
       window.onload = loadNote;
