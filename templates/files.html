@@ -1,0 +1,841 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Files - Public Notepad</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #2ecc71;
+            --secondary-dark: #27ae60;
+            --text-color: #333;
+            --light-bg: #f8f9fa;
+            --border-color: #ddd;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-bg);
+            min-height: 100vh;
+        }
+        
+        .app-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .app-title {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin: 0;
+        }
+        
+        .files-wrapper {
+            flex: 1;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .toolbar {
+            background-color: #f5f5f5;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tool-section {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .files-content {
+            flex: 1;
+            padding: 15px;
+            overflow: auto;
+        }
+        
+        .files-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .files-table th,
+        .files-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .files-table th {
+            background-color: #f9f9f9;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        .files-table tr:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .file-icon {
+            color: var(--primary-color);
+            margin-right: 8px;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-success {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-success:hover {
+            background-color: var(--secondary-dark);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.3s, transform 0.3s;
+            opacity: 0;
+            transform: translateY(20px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .status-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .status-error {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-dark);
+        }
+        
+        .nav-link.active {
+            color: var(--secondary-color);
+        }
+        
+        .app-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+        
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+            color: #888;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transform: translateY(-20px);
+            transition: transform 0.3s;
+        }
+        
+        .modal-overlay.show .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--text-color);
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #888;
+            transition: color 0.2s;
+        }
+        
+        .modal-close:hover {
+            color: var(--danger-color);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .file-editor {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+        }
+        
+        .file-editor.show {
+            display: flex;
+        }
+        
+        .file-editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .file-editor-title {
+            margin: 0;
+            font-size: 1rem;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .file-editor-content {
+            flex: 1;
+            padding: 0;
+            display: flex;
+        }
+        
+        .editor-textarea {
+            width: 100%;
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 15px;
+            font-size: 14px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            resize: none;
+            line-height: 1.5;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Mobile optimization */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 10px;
+            }
+            
+            .app-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            
+            .toolbar {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .tool-section {
+                flex: 1;
+                justify-content: center;
+            }
+            
+            .btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            
+            .files-table {
+                min-width: 600px;
+            }
+            
+            .files-content {
+                overflow-x: auto;
+            }
+            
+            .file-type, .file-size {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="app-title">Public Notepad</h1>
+            <div class="nav-links">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-edit"></i> Notepad
+                </a>
+                <a href="/files" class="nav-link active">
+                    <i class="fas fa-folder"></i> Files
+                </a>
+            </div>
+        </header>
+        
+        <main class="files-wrapper">
+            <div class="toolbar">
+                <div class="tool-section">
+                    <button class="btn btn-success" id="newFileBtn">
+                        <i class="fas fa-plus"></i> New File
+                    </button>
+                    <button class="btn" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <div class="files-content" id="filesContainer">
+                <div class="empty-state" id="emptyState">
+                    <i class="fas fa-folder-open"></i>
+                    <h3>No files yet</h3>
+                    <p>Create a new file to get started</p>
+                </div>
+                
+                <table class="files-table" id="filesTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th class="file-type">Type</th>
+                            <th class="file-size">Size</th>
+                            <th>Modified</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="filesList">
+                        <!-- Files will be populated here -->
+                    </tbody>
+                </table>
+                
+                <div class="file-editor" id="fileEditor">
+                    <div class="file-editor-header">
+                        <h3 class="file-editor-title" id="editorFileName">
+                            <i class="fas fa-file-alt"></i> <span>filename.txt</span>
+                        </h3>
+                        <div class="tool-section">
+                            <button class="btn btn-sm btn-success" id="saveFileBtn">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                            <button class="btn btn-sm" id="closeEditorBtn">
+                                <i class="fas fa-times"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                    <div class="file-editor-content">
+                        <textarea id="editorContent" class="editor-textarea" placeholder="File content..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="app-footer">
+            <p>Public Notepad App - Your notes are stored in Dropbox</p>
+        </footer>
+        
+        <div id="statusMessage" class="status"></div>
+        
+        <!-- New File Modal -->
+        <div class="modal-overlay" id="newFileModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 class="modal-title">Create New File</h3>
+                    <button class="modal-close" id="closeModalBtn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="fileName">File Name</label>
+                        <input type="text" id="fileName" class="form-control" placeholder="e.g., my-notes.txt">
+                    </div>
+                    <div class="form-group">
+                        <label for="fileType">File Type</label>
+                        <select id="fileType" class="form-control">
+                            <option value=".txt">Text (.txt)</option>
+                            <option value=".md">Markdown (.md)</option>
+                            <option value=".html">HTML (.html)</option>
+                            <option value=".css">CSS (.css)</option>
+                            <option value=".js">JavaScript (.js)</option>
+                            <option value=".json">JSON (.json)</option>
+                            <option value=".py">Python (.py)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" id="cancelBtn">Cancel</button>
+                    <button class="btn btn-success" id="createFileBtn">Create File</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const newFileBtn = document.getElementById('newFileBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const filesList = document.getElementById('filesList');
+        const filesTable = document.getElementById('filesTable');
+        const emptyState = document.getElementById('emptyState');
+        const statusMessage = document.getElementById('statusMessage');
+        const newFileModal = document.getElementById('newFileModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const createFileBtn = document.getElementById('createFileBtn');
+        const fileName = document.getElementById('fileName');
+        const fileType = document.getElementById('fileType');
+        const fileEditor = document.getElementById('fileEditor');
+        const editorFileName = document.getElementById('editorFileName').querySelector('span');
+        const editorContent = document.getElementById('editorContent');
+        const saveFileBtn = document.getElementById('saveFileBtn');
+        const closeEditorBtn = document.getElementById('closeEditorBtn');
+        
+        // Show status message
+        function showStatus(message, isError = false) {
+            statusMessage.innerHTML = message;
+            statusMessage.className = 'status ' + (isError ? 'status-error' : 'status-success') + ' show';
+            
+            setTimeout(() => {
+                statusMessage.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Get file icon based on extension
+        function getFileIcon(extension) {
+            const icons = {
+                '.txt': 'fa-file-alt',
+                '.md': 'fa-file-alt',
+                '.html': 'fa-file-code',
+                '.css': 'fa-file-code',
+                '.js': 'fa-file-code',
+                '.json': 'fa-file-code',
+                '.py': 'fa-file-code'
+            };
+            
+            return icons[extension] || 'fa-file';
+        }
+        
+        // Load files list
+        function loadFiles() {
+            // Show loading state
+            filesList.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px;">
+                        <span class="loader" style="border-color: rgba(0,0,0,0.1); border-top-color: var(--primary-color);"></span>
+                        <span style="margin-left: 10px;">Loading files...</span>
+                    </td>
+                </tr>
+            `;
+            
+            fetch('/api/files')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        if (data.files.length === 0) {
+                            // Show empty state
+                            filesTable.style.display = 'none';
+                            emptyState.style.display = 'flex';
+                        } else {
+                            // Display files
+                            filesTable.style.display = 'table';
+                            emptyState.style.display = 'none';
+                            
+                            filesList.innerHTML = '';
+                            
+                            data.files.forEach(file => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>
+                                        <i class="fas ${getFileIcon(file.extension)} file-icon"></i>
+                                        ${file.name}
+                                    </td>
+                                    <td class="file-type">${file.type}</td>
+                                    <td class="file-size">${formatFileSize(file.size)}</td>
+                                    <td>${file.modified}</td>
+                                    <td class="file-actions">
+                                        <button class="btn btn-sm" onclick="openFile('${file.name}')">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteFile('${file.name}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                `;
+                                filesList.appendChild(row);
+                            });
+                        }
+                    } else {
+                        showStatus(`<i class="fas fa-exclamation-circle"></i> ${data.message}`, true);
+                    }
+                })
+                .catch(error => {
+                    showStatus(`<i class="fas fa-exclamation-triangle"></i> Network error: ${error.message}`, true);
+                });
+        }
+        
+        // Open file for editing
+        function openFile(filename) {
+            // Show loading state
+            editorContent.value = 'Loading...';
+            editorFileName.textContent = filename;
+            
+            // Hide files table, show editor
+            filesTable.style.display = 'none';
+            emptyState.style.display = 'none';
+            fileEditor.classList.add('show');
+            
+            // Load file content
+            fetch(`/api/files/${filename}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        editorContent.value = data.content;
+                    } else {
+                        showStatus(`<i class="fas fa-exclamation-circle"></i> ${data.message}`, true);
+                        closeEditor();
+                    }
+                })
+                .catch(error => {
+                    showStatus(`<i class="fas fa-exclamation-triangle"></i> Network error: ${error.message}`, true);
+                    closeEditor();
+                });
+        }
+        
+        // Save file content
+        function saveFile() {
+            const filename = editorFileName.textContent;
+            const content = editorContent.value;
+            
+            // Show loading state
+            const originalHtml = saveFileBtn.innerHTML;
+            saveFileBtn.innerHTML = '<span class="loader"></span> Saving...';
+            saveFileBtn.disabled = true;
+            
+            fetch(`/api/files/${filename}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showStatus(`<i class="fas fa-check-circle"></i> ${data.message}`);
+                    } else {
+                        showStatus(`<i class="fas fa-exclamation-circle"></i> ${data.message}`, true);
+                    }
+                })
+                .catch(error => {
+                    showStatus(`<i class="fas fa-exclamation-triangle"></i> Network error: ${error.message}`, true);
+                })
+                .finally(() => {
+                    saveFileBtn.innerHTML = originalHtml;
+                    saveFileBtn.disabled = false;
+                });
+        }
+        
+        // Close editor and go back to files list
+        function closeEditor() {
+            fileEditor.classList.remove('show');
+            filesTable.style.display = 'table';
+            loadFiles();
+        }
+        
+        // Delete file
+        function deleteFile(filename) {
+            if (confirm(`Are you sure you want to delete "${filename}"?`)) {
+                fetch(`/api/files/${filename}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            showStatus(`<i class="fas fa-check-circle"></i> ${data.message}`);
+                            loadFiles();
+                        } else {
+                            showStatus(`<i class="fas fa-exclamation-circle"></i> ${data.message}`, true);
+                        }
+                    })
+                    .catch(error => {
+                        showStatus(`<i class="fas fa-exclamation-triangle"></i> Network error: ${error.message}`, true);
+                    });
+            }
+        }
+        
+        // Create new file
+        function createNewFile() {
+            const name = fileName.value.trim();
+            const type = fileType.value;
+            
+            if (!name) {
+                showStatus('<i class="fas fa-exclamation-circle"></i> Please enter a file name', true);
+                return;
+            }
+            
+            // Ensure filename has the selected extension
+            const fullName = name.endsWith(type) ? name : name + type;
+            
+            // Show loading state
+            const originalHtml = createFileBtn.innerHTML;
+            createFileBtn.innerHTML = '<span class="loader"></span> Creating...';
+            createFileBtn.disabled = true;
+            
+            fetch('/api/files', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ filename: fullName })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        hideModal();
+                        showStatus(`<i class="fas fa-check-circle"></i> ${data.message}`);
+                        
+                        // Load files and open the new file
+                        loadFiles();
+                        setTimeout(() => openFile(fullName), 500);
+                    } else {
+                        showStatus(`<i class="fas fa-exclamation-circle"></i> ${data.message}`, true);
+                    }
+                })
+                .catch(error => {
+                    showStatus(`<i class="fas fa-exclamation-triangle"></i> Network error: ${error.message}`, true);
+                })
+                .finally(() => {
+                    createFileBtn.innerHTML = originalHtml;
+                    createFileBtn.disabled = false;
+                });
+        }
+        
+        // Show new file modal
+        function showModal() {
+            newFileModal.classList.add('show');
+            fileName.focus();
+        }
+        
+        // Hide new file modal
+        function hideModal() {
+            newFileModal.classList.remove('show');
+            fileName.value = '';
+        }
+        
+        // Event listeners
+        newFileBtn.addEventListener('click', showModal);
+        closeModalBtn.addEventListener('click', hideModal);
+        cancelBtn.addEventListener('click', hideModal);
+        createFileBtn.addEventListener('click', createNewFile);
+        refreshBtn.addEventListener('click', loadFiles);
+        saveFileBtn.addEventListener('click', saveFile);
+        closeEditorBtn.addEventListener('click', closeEditor);
+        
+        // Hide modal when clicking outside
+        newFileModal.addEventListener('click', (e) => {
+            if (e.target === newFileModal) {
+                hideModal();
+            }
+        });
+        
+        // Load files when page loads
+        window.addEventListener('load', loadFiles);
+    </script>
+</body>
+</html>

@@ -1,214 +1,403 @@
 
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>পাবলিক নোটপ্যাড</title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Public Notepad</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 10px;
-        text-align: center;
-        background-color: #f0f2f5;
-      }
-      .container {
-        max-width: 100%;
-        margin: 0 auto;
-        padding: 10px;
-      }
-      textarea {
-        width: 100%;
-        height: 350px;
-        font-size: 16px;
-        padding: 12px;
-        margin: 15px 0;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        resize: vertical;
-        box-sizing: border-box;
-      }
-      .button-group {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-      button {
-        padding: 12px 20px;
-        font-size: 16px;
-        background-color: #1877f2;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        min-width: 140px;
-      }
-      button:hover {
-        background-color: #166fe5;
-      }
-      button:active {
-        transform: scale(0.98);
-      }
-      h1 {
-        color: #1c1e21;
-        margin-bottom: 20px;
-        font-size: 24px;
-      }
-      .status {
-        margin-top: 15px;
-        padding: 10px;
-        border-radius: 5px;
-        display: none;
-      }
-      .success {
-        background-color: #e7f3e5;
-        color: #2e7d32;
-      }
-      .error {
-        background-color: #fdeded;
-        color: #d32f2f;
-      }
-      
-      /* Mobile-specific styles */
-      @media (max-width: 600px) {
-        .container {
-          padding: 5px;
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #2ecc71;
+            --secondary-dark: #27ae60;
+            --text-color: #333;
+            --light-bg: #f8f9fa;
+            --border-color: #ddd;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
         }
-        h1 {
-          font-size: 22px;
-          margin-bottom: 15px;
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-bg);
+            min-height: 100vh;
+        }
+        
+        .app-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .app-title {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin: 0;
+        }
+        
+        .editor-wrapper {
+            flex: 1;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .toolbar {
+            background-color: #f5f5f5;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tool-section {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .notepad-content {
+            flex: 1;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        
         textarea {
-          height: 300px;
-          font-size: 15px;
-          padding: 10px;
+            width: 100%;
+            flex: 1;
+            border: none;
+            outline: none;
+            resize: none;
+            font-size: 16px;
+            line-height: 1.6;
+            padding: 10px;
+            min-height: 300px;
         }
-        button {
-          padding: 10px 15px;
-          font-size: 15px;
-          min-width: 120px;
+        
+        .btn {
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-      }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-success {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-success:hover {
+            background-color: var(--secondary-dark);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.3s, transform 0.3s;
+            opacity: 0;
+            transform: translateY(20px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .status-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .status-error {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-dark);
+        }
+        
+        .app-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Mobile optimization */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 10px;
+            }
+            
+            .app-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            
+            .toolbar {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .tool-section {
+                flex: 1;
+                justify-content: center;
+            }
+            
+            .btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+        }
     </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1>পাবলিক নোটপ্যাড</h1>
-      <textarea
-        id="noteContent"
-        placeholder="এখানে আপনার নোট লিখুন..."
-      ></textarea>
-      <div class="button-group">
-        <button onclick="saveNote()">নোট সেভ করুন</button>
-        <button onclick="loadNote()">নোট লোড করুন</button>
-      </div>
-      <div id="statusMessage" class="status"></div>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="app-title">Public Notepad</h1>
+            <div class="nav-links">
+                <a href="/" class="nav-link active">
+                    <i class="fas fa-edit"></i> Notepad
+                </a>
+                <a href="/files" class="nav-link">
+                    <i class="fas fa-folder"></i> Files
+                </a>
+            </div>
+        </header>
+        
+        <main class="editor-wrapper">
+            <div class="toolbar">
+                <div class="tool-section">
+                    <button class="btn btn-success" id="saveBtn">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                    <button class="btn" id="loadBtn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div class="tool-section">
+                    <button class="btn btn-outline" id="clearBtn">
+                        <i class="fas fa-trash-alt"></i> Clear
+                    </button>
+                </div>
+            </div>
+            
+            <div class="notepad-content">
+                <textarea id="noteContent" placeholder="Type your notes here..."></textarea>
+            </div>
+        </main>
+        
+        <footer class="app-footer">
+            <p>Public Notepad App - Your notes are stored in Dropbox</p>
+        </footer>
+        
+        <div id="statusMessage" class="status"></div>
     </div>
 
     <script>
-      // Add touch feedback for mobile devices
-      const buttons = document.querySelectorAll('button');
-      buttons.forEach(button => {
-        button.addEventListener('touchstart', function() {
-          this.style.backgroundColor = '#0d6efd';
-        }, {passive: true});
+        // DOM elements
+        const noteContent = document.getElementById('noteContent');
+        const saveBtn = document.getElementById('saveBtn');
+        const loadBtn = document.getElementById('loadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const statusMessage = document.getElementById('statusMessage');
         
-        button.addEventListener('touchend', function() {
-          this.style.backgroundColor = '#1877f2';
-        }, {passive: true});
-      });
-      
-      function showStatus(message, isError = false) {
-        const statusDiv = document.getElementById("statusMessage");
-        statusDiv.textContent = message;
-        statusDiv.style.display = "block";
-        statusDiv.className = "status " + (isError ? "error" : "success");
-        setTimeout(() => {
-          statusDiv.style.display = "none";
-        }, 3000);
-      }
-
-      function saveNote() {
-        const content = document.getElementById("noteContent").value;
-        
-        // Show loading indication
-        const saveButton = document.querySelector('button');
-        const originalText = saveButton.textContent;
-        saveButton.textContent = "সেভ হচ্ছে...";
-        saveButton.disabled = true;
-        
-        fetch("/save", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: `content=${encodeURIComponent(content)}`,
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.status === "success") {
-              showStatus("নোট সফলভাবে সেভ হয়েছে!");
-            } else {
-              showStatus("নোট সেভ করতে সমস্যা হয়েছে: " + data.message, true);
-            }
-          })
-          .catch(err => {
-            showStatus("নেটওয়ার্ক সমস্যা: " + err.message, true);
-          })
-          .finally(() => {
-            saveButton.textContent = originalText;
-            saveButton.disabled = false;
-          });
-      }
-
-      function loadNote() {
-        // Show loading indication
-        const loadButton = document.querySelectorAll('button')[1];
-        const originalText = loadButton.textContent;
-        loadButton.textContent = "লোড হচ্ছে...";
-        loadButton.disabled = true;
-        
-        fetch("/load")
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.status === "success") {
-              document.getElementById("noteContent").value = data.content;
-              showStatus("নোট সফলভাবে লোড হয়েছে!");
-            } else {
-              showStatus("নোট লোড করতে সমস্যা হয়েছে: " + data.message, true);
-            }
-          })
-          .catch(err => {
-            showStatus("নেটওয়ার্ক সমস্যা: " + err.message, true);
-          })
-          .finally(() => {
-            loadButton.textContent = originalText;
-            loadButton.disabled = false;
-          });
-      }
-
-      // Auto-save functionality
-      let typingTimer;
-      const doneTypingInterval = 2000; // 2 seconds
-      const noteContent = document.getElementById("noteContent");
-      
-      noteContent.addEventListener('keyup', function() {
-        clearTimeout(typingTimer);
-        if (noteContent.value) {
-          typingTimer = setTimeout(saveNote, doneTypingInterval);
+        // Show status message
+        function showStatus(message, isError = false) {
+            statusMessage.innerHTML = message;
+            statusMessage.className = 'status ' + (isError ? 'status-error' : 'status-success') + ' show';
+            
+            setTimeout(() => {
+                statusMessage.classList.remove('show');
+            }, 3000);
         }
-      });
-      
-      // Clear timer on keydown
-      noteContent.addEventListener('keydown', function() {
-        clearTimeout(typingTimer);
-      });
-
-      // পেজ লোড হওয়ার সাথে সাথে নোট লোড করা
-      window.onload = loadNote;
+        
+        // Save note
+        function saveNote() {
+            const content = noteContent.value;
+            
+            // Update button state
+            const originalHtml = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<span class="loader"></span> Saving...';
+            saveBtn.disabled = true;
+            
+            fetch("/save", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: `content=${encodeURIComponent(content)}`,
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.status === "success") {
+                    showStatus('<i class="fas fa-check-circle"></i> Note saved successfully!');
+                } else {
+                    showStatus('<i class="fas fa-exclamation-circle"></i> Error saving note: ' + data.message, true);
+                }
+            })
+            .catch(err => {
+                showStatus('<i class="fas fa-exclamation-triangle"></i> Network error: ' + err.message, true);
+            })
+            .finally(() => {
+                saveBtn.innerHTML = originalHtml;
+                saveBtn.disabled = false;
+            });
+        }
+        
+        // Load note
+        function loadNote() {
+            // Update button state
+            const originalHtml = loadBtn.innerHTML;
+            loadBtn.innerHTML = '<span class="loader"></span> Loading...';
+            loadBtn.disabled = true;
+            
+            fetch("/load")
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.status === "success") {
+                    noteContent.value = data.content;
+                    showStatus('<i class="fas fa-check-circle"></i> Note loaded successfully!');
+                } else {
+                    showStatus('<i class="fas fa-exclamation-circle"></i> Error loading note: ' + data.message, true);
+                }
+            })
+            .catch(err => {
+                showStatus('<i class="fas fa-exclamation-triangle"></i> Network error: ' + err.message, true);
+            })
+            .finally(() => {
+                loadBtn.innerHTML = originalHtml;
+                loadBtn.disabled = false;
+            });
+        }
+        
+        // Clear note content
+        function clearNote() {
+            if (confirm('Are you sure you want to clear all content?')) {
+                noteContent.value = '';
+                // Auto-save after clearing
+                saveNote();
+            }
+        }
+        
+        // Auto-save functionality
+        let typingTimer;
+        const doneTypingInterval = 2000; // 2 seconds
+        
+        noteContent.addEventListener('keyup', function() {
+            clearTimeout(typingTimer);
+            if (noteContent.value) {
+                typingTimer = setTimeout(saveNote, doneTypingInterval);
+            }
+        });
+        
+        // Clear timer on keydown
+        noteContent.addEventListener('keydown', function() {
+            clearTimeout(typingTimer);
+        });
+        
+        // Event listeners
+        saveBtn.addEventListener('click', saveNote);
+        loadBtn.addEventListener('click', loadNote);
+        clearBtn.addEventListener('click', clearNote);
+        
+        // Load note on page load
+        window.addEventListener('load', loadNote);
     </script>
-  </body>
+</body>
 </html>
