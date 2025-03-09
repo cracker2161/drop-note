@@ -9,6 +9,11 @@ DROPBOX_ACCESS_TOKEN = os.environ.get("DROPBOX_ACCESS_TOKEN")
 APP_KEY = os.environ.get("APP_KEY")
 APP_SECRET = os.environ.get("APP_SECRET")
 
+# Check if credentials are present
+if not DROPBOX_ACCESS_TOKEN:
+    print("WARNING: DROPBOX_ACCESS_TOKEN is not set. Please add it in the Secrets tab.")
+
+# Initialize Dropbox client
 dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
 FILE_PATH = "/public_notepad.txt"
 
